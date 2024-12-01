@@ -7,3 +7,13 @@ as possible. At the time of writing this, I have about 2 weeks of Rust experienc
 which comes from following along with [The Rust Book](https://doc.rust-lang.org/beta/book),
 reading [Rust By Example](https://doc.rust-lang.org/rust-by-example), and working
 through [100 Exercises to Learn Rust](https://rust-exercises.com/100-exercises/)
+
+## Day 1
+
+```sh
+cd day_01
+cargo run -- input.csv
+...
+part 1 answer: 1889772
+part 2 answer: 23228917
+```
