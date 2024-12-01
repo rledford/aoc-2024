@@ -19,6 +19,14 @@ fn main() {
     // - sort the lists in ascending order
     // - iterate from 0 to list.len()
     // - result should be accumulated as "result += abs(l[i] - r[i])"
+    //
+    // answer_2 solution algo
+    // using hashmaps for the left and right lists, we track the occurrences of values
+    // in the left and right lists. for the left list, we only need to add a key entry
+    // but for the right list we need to accumulate the number of occurrences. once
+    // all items in left and right list have been iterated, we go through all the
+    // keys in the left list, and if they also appear in the right list, we add
+    // the product of "value * occurrences" to an accumulator.
 
     l.sort();
     r.sort();
@@ -37,8 +45,6 @@ fn main() {
         };
     }
 
-    // answer_2 solution algo
-    // using hashmaps for the left and right lists, we track the occurrences
     let mut ans_2: usize = 0;
 
     for k in l_similarity.keys() {
