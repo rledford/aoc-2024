@@ -17,3 +17,14 @@ cargo run -- input.csv
 part 1 answer: 1889772
 part 2 answer: 23228917
 ```
+
+## Day 2
+
+```sh
+cd day_02
+cargo run -- input.csv
+...
+analyzed: 1000
+answer 1: 202
+answer 2: 271
+```
