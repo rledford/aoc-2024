@@ -28,3 +28,13 @@ analyzed: 1000
 answer 1: 202
 answer 2: 271
 ```
+
+## Day 3
+
+```sh
+cd day_03
+cargo run --input.txt
+...
+part 1 answer: 174960292
+part 2 answer: 56275602
+```
