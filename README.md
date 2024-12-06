@@ -46,4 +46,5 @@ cd day_04
 cargo run --input.txt
 ...
 part 1 answer: 2483
+part 2 answer: 1925
 ```
