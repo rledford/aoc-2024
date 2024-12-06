@@ -38,3 +38,12 @@ cargo run --input.txt
 part 1 answer: 174960292
 part 2 answer: 56275602
 ```
+
+## Day 4
+
+```sh
+cd day_04
+cargo run --input.txt
+...
+part 1 answer: 2483
+```
