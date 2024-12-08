@@ -14,13 +14,12 @@ fn main() {
     // to a +1 in the constructed order rule hashmap
     //
     // solution steps for part 2
-    // by finding the order_rule_key "key" that has all -1 values, we know
-    // that that "key" must be last, and the first would have all 1 values
-    // so we can compute each number's ordinality based on the order-rule
-    //
-    // after determining the ordinality, we go through that ordinal list and
-    // if the current value is in the update_page list being checked, we push
-    // it onto a separate result list that will be returned
+    // based on the numbers present in the update_list we can compute
+    // their ordinality by referencing the ordering_rule_key and summing
+    // up all the positive and negative 1 values we find for each
+    // then by storing the sum as the key and the key as the value in a
+    // hashmap we can get the keys, order them, and then create a list
+    // of the values ordered by iterating over the ordered keys
     let (ordering_rules, page_updates) = get_input(args.get(1));
     let ordering_rule_key = create_ordering_rule_key(&ordering_rules);
 
@@ -29,7 +28,7 @@ fn main() {
 
     for list in page_updates {
         let center_index = (list.len() - 1) / 2;
-        if let Some(_) = check_update_list(&ordering_rule_key, &list) {
+        if check_update_list(&ordering_rule_key, &list).is_some() {
             let fixed = create_ordinal_list(&ordering_rule_key, &list);
             fixed_update_midpoint_sum += fixed.get(center_index).unwrap();
         } else {
@@ -71,35 +70,13 @@ fn create_ordinal_list(
     sorted_keys.reverse();
 
     for k in sorted_keys {
-        let v = map.get(&k).unwrap();
-        if update_list.contains(v) {
-            result.push(*v);
-        }
+        result.push(*map.get(&k).unwrap());
     }
 
     result
 }
 
-fn create_ordinal_list_old(key: &HashMap<usize, HashMap<usize, isize>>) -> Vec<usize> {
-    let mut ordinal_map: HashMap<usize, isize> = HashMap::new();
-    for k in key.keys() {
-        let mut sum: isize = 0;
-        for v in key.get(k).unwrap().values() {
-            sum += v;
-        }
-        if sum != 0 {
-            println!("sum is not 0 - {sum}");
-        }
-        ordinal_map.insert(*k, sum);
-    }
-    let ordinal_list: Vec<usize> = Vec::new();
-
-    ordinal_list
-}
-
-/// returns Some(index) indicating that the value ahead of the index
-/// should be swapped with the value at index
-/// returns None if the list is valid
+/// returns Some(index) indicating that the value ahead of the index is out of order
 fn check_update_list(
     key: &HashMap<usize, HashMap<usize, isize>>,
     update_list: &[usize],
@@ -125,16 +102,10 @@ fn create_ordering_rule_key(
     let mut result: HashMap<usize, HashMap<usize, isize>> = HashMap::new();
 
     for &(l, r) in ordering_rules {
-        if !result.contains_key(&l) {
-            let rules: HashMap<usize, isize> = HashMap::new();
-            result.insert(l, rules);
-        }
+        result.entry(l).or_default();
         result.get_mut(&l).unwrap().insert(r, 1);
 
-        if !result.contains_key(&r) {
-            let rules: HashMap<usize, isize> = HashMap::new();
-            result.insert(r, rules);
-        }
+        result.entry(r).or_default();
         result.get_mut(&r).unwrap().insert(l, -1);
     }
 
