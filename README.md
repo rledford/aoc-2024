@@ -52,7 +52,7 @@ part 2 answer: 1925
 ## Day 5
 
 ```sh
-cd day_04
+cd day_05
 cargo run --input.txt
 ...
 part 1 answer: 5108
