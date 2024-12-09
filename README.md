@@ -56,5 +56,15 @@ cd day_05
 cargo run --input.txt
 ...
 part 1 answer: 5108
-part 2 answer: 7380
+part 2 answer: 738
+```
+
+## Day 6
+
+```sh
+cd day_06
+cargo run --input.txt
+...
+part 1 answer: 5177
+part 2 answer:
 ```
