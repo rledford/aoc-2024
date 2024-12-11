@@ -1,27 +1,119 @@
 use std::{collections::HashSet, env, fs::read_to_string};
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let (map, start_pos) = get_input(args.get(1));
-
-    let (row, col) = start_pos;
-
-    let mut pos = GridPos::new(row, col);
-    let mut dir = Direction::up();
-    let mut visited: HashSet<GridPos> = HashSet::new();
-
     // solution part 1
     // walk the 2d array until the next index would leave the bounds and
     // keep track of each "distinct" position visited - the answer will
     // be the len() of the set
+    //
+    // solution part 2
+    // given the guard starts in the same position, the distinct
+    // visited positions from part 1 can be used as candidates
+    // for new obstruction placement
+    //
+    // after adding a new obstruction to one of the known visit
+    // positions, run the same check as in part one, but
+    // verify that the guard never exits the grid
+    //
+    // we cand determine that the guard is stuck in a loop by
+    // predetermining the maximum distinct visitable positions
+    // on the entire grid (all the '.'s), then track how many
+    // steps the guard has taken since the last "new" grid
+    // position has been visited and if that number is >=
+    // the max visitable positions in the grid, then the
+    // guard must be stuck in a loop
 
-    visited.insert(GridPos::new(row, col));
-
+    let args: Vec<String> = env::args().collect();
+    let (map, start_pos) = get_input(args.get(1));
+    let (row, col) = start_pos;
     let grid = Grid::new(map);
+
+    let distinct_visited_positions = get_distinct_visited_positions(&grid, GridPos::new(row, col));
+    let total_distinct_visits = distinct_visited_positions.len();
+    let total_loop_obstruction_positions = get_total_loop_obstruction_positions(
+        &grid,
+        &distinct_visited_positions,
+        GridPos::new(row, col),
+    );
+    println!("part 1 answer: {total_distinct_visits}");
+    println!("part 2 answer: {total_loop_obstruction_positions}");
+}
+
+fn get_total_loop_obstruction_positions(
+    grid: &Grid,
+    distinct_visited_positions: &HashSet<GridPos>,
+    start: GridPos,
+) -> usize {
+    let mut result: usize = 0;
+
+    let mut test_data: Vec<Vec<char>> = Vec::new();
+
+    for r in &grid.data {
+        let mut row: Vec<char> = Vec::new();
+        for c in r {
+            row.push(*c);
+        }
+        test_data.push(row);
+    }
+
+    let mut test_grid = Grid::new(test_data);
+
+    let total_visitable_positions = test_grid.total_visitable_positions();
+
+    for obstruction_pos in distinct_visited_positions {
+        dbg!(&obstruction_pos);
+        if obstruction_pos == &start {
+            continue;
+        }
+
+        test_grid.replace(obstruction_pos, '#');
+
+        // if this exceed total_visitable_positions, we're in a loop
+        let mut steps_since_last_distinct_position = 0;
+        let mut pos = GridPos::new(start.row, start.col);
+        let mut dir = Direction::up();
+        let mut visited: HashSet<GridPos> = HashSet::new();
+
+        // yes, this sort of duplicates what's in the fn for part 1 answer
+        while let Some(next_pos) = test_grid.next(&pos, &dir) {
+            let ch = test_grid.char_at(&next_pos);
+            if !test_grid.is_visitable(&ch) {
+                dir = dir.rotated90();
+                continue;
+            }
+
+            if visited.contains(&pos) {
+                steps_since_last_distinct_position += 1;
+            } else {
+                steps_since_last_distinct_position = 0;
+            }
+
+            if steps_since_last_distinct_position > total_visitable_positions {
+                result += 1;
+                break;
+            }
+
+            visited.insert(GridPos::new(next_pos.row, next_pos.col));
+            pos = next_pos;
+        }
+
+        test_grid.replace(obstruction_pos, '.');
+    }
+
+    println!("{total_visitable_positions}");
+
+    result
+}
+fn get_distinct_visited_positions(grid: &Grid, start: GridPos) -> HashSet<GridPos> {
+    let mut pos = GridPos::new(start.row, start.col);
+    let mut dir = Direction::up();
+    let mut visited: HashSet<GridPos> = HashSet::new();
+
+    visited.insert(GridPos::new(start.row, start.col));
 
     while let Some(next_pos) = grid.next(&pos, &dir) {
         let ch = grid.char_at(&next_pos);
-        if !grid.is_passable(&ch) {
+        if !grid.is_visitable(&ch) {
             dir = dir.rotated90();
             continue;
         }
@@ -30,8 +122,7 @@ fn main() {
         pos = next_pos;
     }
 
-    let total_distinct_visits = visited.len();
-    println!("part 1 answer: {total_distinct_visits}");
+    visited
 }
 
 #[derive(Debug)]
@@ -63,8 +154,32 @@ impl Grid {
     fn char_at(&self, pos: &GridPos) -> char {
         *self.data.get(pos.row).unwrap().get(pos.col).unwrap()
     }
-    fn is_passable(&self, ch: &char) -> bool {
-        ch != &'#'
+    fn is_visitable(&self, ch: &char) -> bool {
+        ch == &'.'
+    }
+    fn place_obstruction(&mut self, pos: &GridPos) {
+        self.replace(pos, '#');
+    }
+    fn remove_obstruction(&mut self, pos: &GridPos) {
+        self.replace(pos, '.');
+    }
+    fn replace(&mut self, pos: &GridPos, ch: char) {
+        let r = self.data.get_mut(pos.row).unwrap();
+        r.remove(pos.col);
+        r.insert(pos.col, ch);
+    }
+    fn total_visitable_positions(&self) -> usize {
+        let mut result: usize = 0;
+        for r in self.data.iter() {
+            for ch in r.iter() {
+                if !self.is_visitable(ch) {
+                    continue;
+                }
+                result += 1;
+            }
+        }
+
+        result
     }
 }
 
